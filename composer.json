@@ -19,7 +19,8 @@
     ],
     "homepage": "https://github.com/PHPDevsr/php-profiler",
     "require": {
-        "php": "^8.3 || ^8.4 || ^8.5"
+        "php": "^8.3 || ^8.4 || ^8.5",
+        "ext-excimer": "*"
     },
     "require-dev": {
         "nexusphp/tachycardia": "^2.4",
