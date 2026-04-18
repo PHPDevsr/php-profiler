@@ -211,8 +211,19 @@ class Profiler
                 continue;
             }
 
-            $stack = substr($line, 0, $lastSpace);
-            $count = (int) substr($line, $lastSpace + 1);
+            $stack     = substr($line, 0, $lastSpace);
+            $rawCount  = substr($line, $lastSpace + 1);
+
+            // Skip malformed lines where the count is not a positive integer.
+            if (! ctype_digit($rawCount)) {
+                continue;
+            }
+
+            $count = (int) $rawCount;
+
+            if ($count <= 0) {
+                continue;
+            }
 
             $result[] = [
                 'stack' => explode(';', $stack),

@@ -35,7 +35,9 @@ if (! extension_loaded('excimer')) {
 }
 
 // Skip profiling the dashboard itself to avoid recursion / noise.
-$_profilerRequestUri = $_SERVER['REQUEST_URI'] ?? '';
+// Sanitize to printable ASCII only before storing or comparing.
+$_profilerRequestUri = preg_replace('/[^\x20-\x7E]/', '', $_SERVER['REQUEST_URI'] ?? '') ?? '';
+
 if (
     str_contains($_profilerRequestUri, '/profiler')
     || str_contains($_profilerRequestUri, '/__profiler')
@@ -83,8 +85,9 @@ register_shutdown_function(
             $endpoint = substr($endpoint, 0, $qpos);
         }
 
-        // Count total samples (number of non-empty lines).
-        $sampleCount = substr_count(trim($folded), "\n") + 1;
+        // Count total samples (number of non-empty lines in the trimmed folded string).
+        $trimmedFolded = trim($folded);
+        $sampleCount   = substr_count($trimmedFolded, "\n") + 1;
 
         $id      = date('YmdHis') . '_' . bin2hex(random_bytes(8));
         $profile = [

@@ -163,8 +163,9 @@ $action = $_GET['action'] ?? '';
 
 if ($action !== '') {
     header('Content-Type: application/json; charset=utf-8');
-    // Prevent caching of API responses
-    header('Cache-Control: no-store');
+    // Prevent caching of API responses by browsers and intermediate proxies.
+    header('Cache-Control: no-cache, no-store, must-revalidate, private');
+    header('Pragma: no-cache');
 
     switch ($action) {
         case 'endpoints':
@@ -184,7 +185,9 @@ if ($action !== '') {
         case 'export':
             $endpoint = (string) ($_GET['endpoint'] ?? '');
             $folded   = mergeFoldedStacks($endpoint, $dataDir);
-            $safe     = preg_replace('/[^a-zA-Z0-9._\-]/', '_', ltrim($endpoint, '/')) ?: 'profile';
+            // Build a safe filename: strip path separators and control characters,
+            // then use basename() to prevent directory traversal.
+            $safe = preg_replace('/[^a-zA-Z0-9._\-]/', '_', basename($endpoint)) ?: 'profile';
             header('Content-Type: application/json; charset=utf-8');
             header('Content-Disposition: attachment; filename="profile-' . $safe . '.json"');
             echo json_encode([
