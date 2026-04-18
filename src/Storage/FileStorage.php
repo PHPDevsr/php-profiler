@@ -51,7 +51,9 @@ class FileStorage
 
         $this->ensureDataDir();
 
-        $filename = $this->dataDir . '/' . $profile['id'] . '.json';
+        /** @var string $id */
+        $id       = $profile['id'];
+        $filename = $this->dataDir . '/' . $id . '.json';
         $encoded  = json_encode($profile, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         if ($encoded === false || file_put_contents($filename, $encoded) === false) {
@@ -120,11 +122,12 @@ class FileStorage
      */
     public function getEndpointStats(): array
     {
-        /** @var array<string, array<string, mixed>> $endpoints */
+        /** @var array<string, array{endpoint: string, request_count: int, total_samples: int, total_duration_ms: float, avg_duration_ms: float}> $endpoints */
         $endpoints = [];
 
         foreach ($this->findAll() as $profile) {
-            $ep = (string) ($profile['endpoint'] ?? '');
+            $rawEndpoint = $profile['endpoint'];
+            $ep          = is_string($rawEndpoint) ? $rawEndpoint : '';
 
             if (! isset($endpoints[$ep])) {
                 $endpoints[$ep] = [
@@ -137,14 +140,23 @@ class FileStorage
             }
 
             $endpoints[$ep]['request_count']++;
-            $endpoints[$ep]['total_samples']     += (int) ($profile['sample_count'] ?? 0);
-            $endpoints[$ep]['total_duration_ms'] += (float) ($profile['duration_ms'] ?? 0.0);
+
+            $rawSampleCount = $profile['sample_count'];
+            $endpoints[$ep]['total_samples'] += is_int($rawSampleCount) ? $rawSampleCount : 0;
+
+            $rawDurationMs = $profile['duration_ms'];
+
+            if (is_float($rawDurationMs)) {
+                $endpoints[$ep]['total_duration_ms'] += $rawDurationMs;
+            } elseif (is_int($rawDurationMs)) {
+                $endpoints[$ep]['total_duration_ms'] += (float) $rawDurationMs;
+            }
         }
 
         foreach ($endpoints as &$ep) {
-            $count                = (int) $ep['request_count'];
+            $count                = $ep['request_count'];
             $ep['avg_duration_ms'] = $count > 0
-                ? round((float) $ep['total_duration_ms'] / $count, 2)
+                ? round($ep['total_duration_ms'] / $count, 2)
                 : 0.0;
         }
 
@@ -152,10 +164,10 @@ class FileStorage
 
         usort(
             $endpoints,
-            static fn (array $a, array $b): int => (int) $b['total_samples'] - (int) $a['total_samples']
+            static fn (array $a, array $b): int => $b['total_samples'] - $a['total_samples']
         );
 
-        return array_values($endpoints);
+        return $endpoints;
     }
 
     /**

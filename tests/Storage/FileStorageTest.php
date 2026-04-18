@@ -42,7 +42,8 @@ final class FileStorageTest extends TestCase
     protected function tearDown(): void
     {
         // Remove test files
-        $files = glob($this->tmpDir . '/*.json') ?: [];
+        $rawFiles = glob($this->tmpDir . '/*.json');
+        $files    = $rawFiles !== false ? $rawFiles : [];
 
         foreach ($files as $file) {
             unlink($file);
@@ -168,7 +169,8 @@ final class FileStorageTest extends TestCase
         $deleted = $this->storage->cleanup(3);
 
         assertSame(2, $deleted);
-        assertCount(3, glob($this->tmpDir . '/*.json') ?: []);
+        $jsonFiles3 = glob($this->tmpDir . '/*.json');
+        assertCount(3, $jsonFiles3 !== false ? $jsonFiles3 : []);
     }
 
     public function testCleanupDoesNothingWhenUnderLimit(): void
@@ -177,7 +179,8 @@ final class FileStorageTest extends TestCase
         $this->storage->save($this->makeProfile('f2', '/api/x'));
 
         assertSame(0, $this->storage->cleanup(10));
-        assertCount(2, glob($this->tmpDir . '/*.json') ?: []);
+        $jsonFiles2 = glob($this->tmpDir . '/*.json');
+        assertCount(2, $jsonFiles2 !== false ? $jsonFiles2 : []);
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
