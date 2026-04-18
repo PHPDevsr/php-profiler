@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd"
     backupGlobals="false"
     beStrictAboutOutputDuringTests="true"
     colors="true"
@@ -29,13 +29,13 @@
     </testsuites>
 
     <extensions>
-        <bootstrap class="Nexus\PHPUnit\Tachycardia\TachycardiaExtension">
+        <extension class="Nexus\PHPUnit\Tachycardia\TachycardiaExtension">
             <parameter name="time-limit" value="0.50" />
             <parameter name="report-count" value="30" />
             <parameter name="precision" value="2" />
             <parameter name="format" value="table" />
             <parameter name="ci-format" value="github" />
-        </bootstrap>
+        </extension>
     </extensions>
 
     <logging>
