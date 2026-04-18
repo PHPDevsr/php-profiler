@@ -27,7 +27,7 @@ class Profiler
     /**
      * Default sample period in seconds.
      */
-    private const DEFAULT_PERIOD = 0.01;
+    private const float DEFAULT_PERIOD = 0.01;
 
     /**
      * Whether the profiler is currently running.
@@ -42,11 +42,6 @@ class Profiler
     private array $log = [];
 
     /**
-     * Sample period in seconds.
-     */
-    private float $period;
-
-    /**
      * Raw folded stacks string produced by Excimer after stop().
      */
     private string $foldedStacks = '';
@@ -57,9 +52,9 @@ class Profiler
     private ?ExcimerProfiler $excimerProfiler = null;
 
     /**
-     * @param float $period Sample period in seconds (default: 0.01)
-     */
-    public function __construct(float $period = self::DEFAULT_PERIOD)
+    * @param float $period Sample period in seconds (default: 0.01)
+    */
+    public function __construct(private float $period = self::DEFAULT_PERIOD)
     {
         $this->period = $period;
     }
@@ -103,7 +98,7 @@ class Profiler
             throw new RuntimeException('Profiler is not running.');
         }
 
-        if ($this->excimerProfiler !== null) {
+        if ($this->excimerProfiler instanceof ExcimerProfiler) {
             $this->excimerProfiler->stop();
             $excimerLog            = $this->excimerProfiler->getLog();
             $this->foldedStacks    = $excimerLog->formatFolded();

@@ -24,7 +24,7 @@ use RuntimeException;
  */
 class FileStorage
 {
-    private string $dataDir;
+    private readonly string $dataDir;
 
     public function __construct(string $dataDir)
     {
@@ -51,7 +51,7 @@ class FileStorage
 
         $this->ensureDataDir();
 
-        $filename = $this->dataDir . '/' . (string) $profile['id'] . '.json';
+        $filename = $this->dataDir . '/' . $profile['id'] . '.json';
         $encoded  = json_encode($profile, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         if ($encoded === false || file_put_contents($filename, $encoded) === false) {

@@ -23,6 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class FileStorageTest extends TestCase
 {
     private string $tmpDir;
+
     private FileStorage $storage;
 
     protected function setUp(): void
