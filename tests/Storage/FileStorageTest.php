@@ -53,14 +53,14 @@ final class FileStorageTest extends TestCase
         $profile = $this->makeProfile('p1', '/api/users');
         $this->storage->save($profile);
 
-        $this->assertFileExists($this->tmpDir . '/p1.json');
+        assertFileExists($this->tmpDir . '/p1.json');
     }
 
     public function testSaveCreatesDataDirIfMissing(): void
     {
-        $this->assertDirectoryDoesNotExist($this->tmpDir);
+        assertDirectoryDoesNotExist($this->tmpDir);
         $this->storage->save($this->makeProfile('p1', '/api/users'));
-        $this->assertDirectoryExists($this->tmpDir);
+        assertDirectoryExists($this->tmpDir);
     }
 
     public function testSaveThrowsOnMissingRequiredKey(): void
@@ -77,9 +77,9 @@ final class FileStorageTest extends TestCase
         $raw  = file_get_contents($this->tmpDir . '/p2.json');
         $data = json_decode((string) $raw, true);
 
-        $this->assertIsArray($data);
-        $this->assertSame('/api/orders', $data['endpoint']);
-        $this->assertSame('main;foo;bar 5', $data['folded_stacks']);
+        assertIsArray($data);
+        assertSame('/api/orders', $data['endpoint']);
+        assertSame('main;foo;bar 5', $data['folded_stacks']);
     }
 
     // ── findAll() ─────────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ final class FileStorageTest extends TestCase
     public function testFindAllReturnsEmptyForEmptyDir(): void
     {
         mkdir($this->tmpDir, 0755, true);
-        $this->assertSame([], $this->storage->findAll());
+        assertSame([], $this->storage->findAll());
     }
 
     public function testFindAllReturnsAllSavedProfiles(): void
@@ -97,7 +97,7 @@ final class FileStorageTest extends TestCase
         $this->storage->save($this->makeProfile('c3', '/api/c'));
 
         $all = $this->storage->findAll();
-        $this->assertCount(3, $all);
+        assertCount(3, $all);
     }
 
     // ── findByEndpoint() ──────────────────────────────────────────────────────
@@ -109,17 +109,17 @@ final class FileStorageTest extends TestCase
         $this->storage->save($this->makeProfile('x3', '/api/orders'));
 
         $users = $this->storage->findByEndpoint('/api/users');
-        $this->assertCount(2, $users);
+        assertCount(2, $users);
 
         foreach ($users as $p) {
-            $this->assertSame('/api/users', $p['endpoint']);
+            assertSame('/api/users', $p['endpoint']);
         }
     }
 
     public function testFindByEndpointReturnsEmptyWhenNoMatch(): void
     {
         $this->storage->save($this->makeProfile('y1', '/api/users'));
-        $this->assertSame([], $this->storage->findByEndpoint('/api/other'));
+        assertSame([], $this->storage->findByEndpoint('/api/other'));
     }
 
     // ── getEndpointStats() ────────────────────────────────────────────────────
@@ -133,21 +133,21 @@ final class FileStorageTest extends TestCase
 
         $stats = $this->storage->getEndpointStats();
 
-        $this->assertCount(2, $stats);
-        $this->assertSame('/api/b', $stats[0]['endpoint']);
-        $this->assertSame(15, $stats[0]['total_samples']);
-        $this->assertSame(2,  $stats[0]['request_count']);
-        $this->assertSame(175.0, $stats[0]['avg_duration_ms']);
+        assertCount(2, $stats);
+        assertSame('/api/b', $stats[0]['endpoint']);
+        assertSame(15, $stats[0]['total_samples']);
+        assertSame(2,  $stats[0]['request_count']);
+        assertSame(175.0, $stats[0]['avg_duration_ms']);
 
-        $this->assertSame('/api/a', $stats[1]['endpoint']);
-        $this->assertSame(3, $stats[1]['total_samples']);
-        $this->assertSame(1, $stats[1]['request_count']);
+        assertSame('/api/a', $stats[1]['endpoint']);
+        assertSame(3, $stats[1]['total_samples']);
+        assertSame(1, $stats[1]['request_count']);
     }
 
     public function testGetEndpointStatsReturnsEmptyForEmptyDir(): void
     {
         mkdir($this->tmpDir, 0755, true);
-        $this->assertSame([], $this->storage->getEndpointStats());
+        assertSame([], $this->storage->getEndpointStats());
     }
 
     // ── cleanup() ─────────────────────────────────────────────────────────────
@@ -160,8 +160,8 @@ final class FileStorageTest extends TestCase
 
         $deleted = $this->storage->cleanup(3);
 
-        $this->assertSame(2, $deleted);
-        $this->assertCount(3, glob($this->tmpDir . '/*.json') ?: []);
+        assertSame(2, $deleted);
+        assertCount(3, glob($this->tmpDir . '/*.json') ?: []);
     }
 
     public function testCleanupDoesNothingWhenUnderLimit(): void
@@ -169,8 +169,8 @@ final class FileStorageTest extends TestCase
         $this->storage->save($this->makeProfile('f1', '/api/x'));
         $this->storage->save($this->makeProfile('f2', '/api/x'));
 
-        $this->assertSame(0, $this->storage->cleanup(10));
-        $this->assertCount(2, glob($this->tmpDir . '/*.json') ?: []);
+        assertSame(0, $this->storage->cleanup(10));
+        assertCount(2, glob($this->tmpDir . '/*.json') ?: []);
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
