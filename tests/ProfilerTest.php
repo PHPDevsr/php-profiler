@@ -1,0 +1,124 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of PHPDevsr/php-profiler.
+ *
+ * (c) 2024 Denny Septian Panggabean <xamidimura@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ */
+
+namespace Tests;
+
+use PHPDevsr\Profiler\Profiler;
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
+/**
+ * @internal
+ */
+final class ProfilerTest extends TestCase
+{
+    private Profiler $profiler;
+
+    protected function setUp(): void
+    {
+        $this->profiler = new Profiler();
+    }
+
+    public function testDefaultPeriod(): void
+    {
+        $this->assertSame(0.01, $this->profiler->getPeriod());
+    }
+
+    public function testCustomPeriod(): void
+    {
+        $profiler = new Profiler(0.05);
+        $this->assertSame(0.05, $profiler->getPeriod());
+    }
+
+    public function testSetPeriod(): void
+    {
+        $this->profiler->setPeriod(0.02);
+        $this->assertSame(0.02, $this->profiler->getPeriod());
+    }
+
+    public function testIsNotRunningInitially(): void
+    {
+        $this->assertFalse($this->profiler->isRunning());
+    }
+
+    public function testStartSetsRunning(): void
+    {
+        $this->profiler->start();
+        $this->assertTrue($this->profiler->isRunning());
+        $this->profiler->stop();
+    }
+
+    public function testStopSetsNotRunning(): void
+    {
+        $this->profiler->start();
+        $this->profiler->stop();
+        $this->assertFalse($this->profiler->isRunning());
+    }
+
+    public function testStartThrowsIfAlreadyRunning(): void
+    {
+        $this->profiler->start();
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Profiler is already running.');
+
+        try {
+            $this->profiler->start();
+        } finally {
+            $this->profiler->stop();
+        }
+    }
+
+    public function testStopThrowsIfNotRunning(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Profiler is not running.');
+        $this->profiler->stop();
+    }
+
+    public function testSetPeriodThrowsIfRunning(): void
+    {
+        $this->profiler->start();
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Cannot change period while profiler is running.');
+
+        try {
+            $this->profiler->setPeriod(0.05);
+        } finally {
+            $this->profiler->stop();
+        }
+    }
+
+    public function testGetLogInitiallyEmpty(): void
+    {
+        $this->assertSame([], $this->profiler->getLog());
+    }
+
+    public function testResetClearsLog(): void
+    {
+        $this->profiler->reset();
+        $this->assertSame([], $this->profiler->getLog());
+    }
+
+    public function testResetThrowsIfRunning(): void
+    {
+        $this->profiler->start();
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Cannot reset while profiler is running.');
+
+        try {
+            $this->profiler->reset();
+        } finally {
+            $this->profiler->stop();
+        }
+    }
+}
