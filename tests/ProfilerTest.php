@@ -121,4 +121,37 @@ final class ProfilerTest extends TestCase
             $this->profiler->stop();
         }
     }
+
+    public function testGetFoldedStacksInitiallyEmpty(): void
+    {
+        $this->assertSame('', $this->profiler->getFoldedStacks());
+    }
+
+    public function testGetFoldedStacksEmptyAfterStartStop(): void
+    {
+        // Without the excimer extension the folded stacks remain empty.
+        $this->profiler->start();
+        $this->profiler->stop();
+        $this->assertSame('', $this->profiler->getFoldedStacks());
+    }
+
+    public function testResetClearsFoldedStacks(): void
+    {
+        $this->profiler->reset();
+        $this->assertSame('', $this->profiler->getFoldedStacks());
+    }
+
+    public function testStartClearsPreviousData(): void
+    {
+        // start() / stop() pair should always reset log and folded stacks.
+        $this->profiler->start();
+        $this->profiler->stop();
+        $this->assertSame([], $this->profiler->getLog());
+        $this->assertSame('', $this->profiler->getFoldedStacks());
+
+        // A second start should clear them again.
+        $this->profiler->start();
+        $this->profiler->stop();
+        $this->assertSame([], $this->profiler->getLog());
+    }
 }

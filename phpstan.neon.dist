@@ -4,3 +4,7 @@ parameters:
     paths:
         - src/
         - tests/
+    stubFiles:
+        - stubs/ExcimerProfiler.php
+        - stubs/ExcimerLog.php
+        - stubs/ExcimerLogEntry.php
