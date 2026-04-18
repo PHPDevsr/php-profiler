@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PHPDevsr\Profiler;
 
+use ExcimerProfiler;
 use RuntimeException;
 
 /**

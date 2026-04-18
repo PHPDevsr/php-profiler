@@ -17,6 +17,13 @@ use InvalidArgumentException;
 use PHPDevsr\Profiler\Storage\FileStorage;
 use PHPUnit\Framework\TestCase;
 
+use function PHPUnit\Framework\assertCount;
+use function PHPUnit\Framework\assertDirectoryDoesNotExist;
+use function PHPUnit\Framework\assertDirectoryExists;
+use function PHPUnit\Framework\assertFileExists;
+use function PHPUnit\Framework\assertIsArray;
+use function PHPUnit\Framework\assertSame;
+
 /**
  * @internal
  */

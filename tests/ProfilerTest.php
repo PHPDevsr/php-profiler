@@ -17,6 +17,10 @@ use PHPDevsr\Profiler\Profiler;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+use function PHPUnit\Framework\assertFalse;
+use function PHPUnit\Framework\assertSame;
+use function PHPUnit\Framework\assertTrue;
+
 /**
  * @internal
  */
