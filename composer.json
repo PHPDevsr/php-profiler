@@ -1,0 +1,63 @@
+{
+    "name": "phpdevsr/php-profiler",
+    "description": "PHP Profiling with Excimer",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "php",
+        "profiler",
+        "profiling",
+        "excimer",
+        "performance"
+    ],
+    "authors": [
+        {
+            "name": "Denny Septian Panggabean",
+            "email": "xamidimura@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/PHPDevsr/php-profiler",
+    "require": {
+        "php": "^8.3 || ^8.4 || ^8.5"
+    },
+    "require-dev": {
+        "nexusphp/tachycardia": "^2.4",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpcov": "^11.0 || ^12.0",
+        "phpunit/phpunit": "^12.5.22",
+        "rector/rector": "^2.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "PHPDevsr\\Profiler\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "scripts": {
+        "analyze": [
+            "@phpstan",
+            "@rector"
+        ],
+        "rector": "vendor/bin/rector process --dry-run",
+        "rector-fix": "vendor/bin/rector process",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "phpstan-baseline": "vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.php",
+        "test": "vendor/bin/phpunit --coverage-text --coverage-html build/phpunit/html --coverage-clover build/phpunit/logs/clover.xml --coverage-php build/phpunit/cov/coverage.cov --testsuite main"
+    }
+}
