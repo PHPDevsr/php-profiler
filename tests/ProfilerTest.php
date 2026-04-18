@@ -71,9 +71,9 @@ final class ProfilerTest extends TestCase
 
     public function testStartThrowsIfAlreadyRunning(): void
     {
-        $this->profiler->start();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Profiler is already running.');
+        $this->profiler->start();
 
         try {
             $this->profiler->start();
@@ -91,9 +91,9 @@ final class ProfilerTest extends TestCase
 
     public function testSetPeriodThrowsIfRunning(): void
     {
-        $this->profiler->start();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot change period while profiler is running.');
+        $this->profiler->start();
 
         try {
             $this->profiler->setPeriod(0.05);
@@ -115,9 +115,9 @@ final class ProfilerTest extends TestCase
 
     public function testResetThrowsIfRunning(): void
     {
-        $this->profiler->start();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot reset while profiler is running.');
+        $this->profiler->start();
 
         try {
             $this->profiler->reset();
