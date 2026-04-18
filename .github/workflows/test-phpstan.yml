@@ -44,7 +44,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           tools: phpstan
-          extensions: intl, json, mbstring, xml
+          extensions: intl, json, mbstring, xml, excimer
           coverage: none
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
