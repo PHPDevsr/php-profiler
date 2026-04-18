@@ -56,7 +56,6 @@ class Profiler
     */
     public function __construct(private float $period = self::DEFAULT_PERIOD)
     {
-        $this->period = $period;
     }
 
     /**
