@@ -43,7 +43,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           tools: composer, phpunit
-          extensions: intl
+          extensions: intl, json, mbstring, xml, excimer
           coverage: xdebug
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}

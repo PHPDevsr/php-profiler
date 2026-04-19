@@ -17,6 +17,10 @@ use PHPDevsr\Profiler\Profiler;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+use function PHPUnit\Framework\assertFalse;
+use function PHPUnit\Framework\assertSame;
+use function PHPUnit\Framework\assertTrue;
+
 /**
  * @internal
  */
@@ -31,30 +35,30 @@ final class ProfilerTest extends TestCase
 
     public function testDefaultPeriod(): void
     {
-        $this->assertSame(0.01, $this->profiler->getPeriod());
+        assertSame(0.01, $this->profiler->getPeriod());
     }
 
     public function testCustomPeriod(): void
     {
         $profiler = new Profiler(0.05);
-        $this->assertSame(0.05, $profiler->getPeriod());
+        assertSame(0.05, $profiler->getPeriod());
     }
 
     public function testSetPeriod(): void
     {
         $this->profiler->setPeriod(0.02);
-        $this->assertSame(0.02, $this->profiler->getPeriod());
+        assertSame(0.02, $this->profiler->getPeriod());
     }
 
     public function testIsNotRunningInitially(): void
     {
-        $this->assertFalse($this->profiler->isRunning());
+        assertFalse($this->profiler->isRunning());
     }
 
     public function testStartSetsRunning(): void
     {
         $this->profiler->start();
-        $this->assertTrue($this->profiler->isRunning());
+        assertTrue($this->profiler->isRunning());
         $this->profiler->stop();
     }
 
@@ -62,14 +66,14 @@ final class ProfilerTest extends TestCase
     {
         $this->profiler->start();
         $this->profiler->stop();
-        $this->assertFalse($this->profiler->isRunning());
+        assertFalse($this->profiler->isRunning());
     }
 
     public function testStartThrowsIfAlreadyRunning(): void
     {
-        $this->profiler->start();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Profiler is already running.');
+        $this->profiler->start();
 
         try {
             $this->profiler->start();
@@ -87,9 +91,9 @@ final class ProfilerTest extends TestCase
 
     public function testSetPeriodThrowsIfRunning(): void
     {
-        $this->profiler->start();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot change period while profiler is running.');
+        $this->profiler->start();
 
         try {
             $this->profiler->setPeriod(0.05);
@@ -100,25 +104,59 @@ final class ProfilerTest extends TestCase
 
     public function testGetLogInitiallyEmpty(): void
     {
-        $this->assertSame([], $this->profiler->getLog());
+        assertSame([], $this->profiler->getLog());
     }
 
     public function testResetClearsLog(): void
     {
         $this->profiler->reset();
-        $this->assertSame([], $this->profiler->getLog());
+        assertSame([], $this->profiler->getLog());
     }
 
     public function testResetThrowsIfRunning(): void
     {
-        $this->profiler->start();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot reset while profiler is running.');
+        $this->profiler->start();
 
         try {
             $this->profiler->reset();
         } finally {
             $this->profiler->stop();
         }
+    }
+
+    public function testGetFoldedStacksInitiallyEmpty(): void
+    {
+        assertSame('', $this->profiler->getFoldedStacks());
+    }
+
+    public function testGetFoldedStacksEmptyAfterStartStop(): void
+    {
+        // Without the excimer extension the folded stacks remain empty.
+        $this->profiler->start();
+        $this->profiler->stop();
+        assertSame('', $this->profiler->getFoldedStacks());
+    }
+
+    public function testResetClearsFoldedStacks(): void
+    {
+        $this->profiler->reset();
+        assertSame('', $this->profiler->getFoldedStacks());
+    }
+
+    public function testStartClearsPreviousData(): void
+    {
+        // start() / stop() pair should always reset log and folded stacks.
+        $this->profiler->start();
+        $this->profiler->stop();
+        assertSame([], $this->profiler->getLog());
+        assertSame('', $this->profiler->getFoldedStacks());
+
+        // A second start should clear them again.
+        $this->profiler->start();
+        $this->profiler->stop();
+        assertSame([], $this->profiler->getLog());
+        assertSame('', $this->profiler->getFoldedStacks());
     }
 }

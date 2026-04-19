@@ -13,19 +13,23 @@ declare(strict_types=1);
 
 namespace PHPDevsr\Profiler;
 
+use Error;
+use ExcimerProfiler;
 use RuntimeException;
 
 /**
  * PHP Profiler using Excimer extension.
  *
  * Wraps the Excimer sampling profiler for convenient use.
+ * When the excimer extension is not loaded the profiler still tracks
+ * start/stop state so it can be used in environments without the extension.
  */
 class Profiler
 {
     /**
      * Default sample period in seconds.
      */
-    private const DEFAULT_PERIOD = 0.01;
+    private const float DEFAULT_PERIOD = 0.01;
 
     /**
      * Whether the profiler is currently running.
@@ -33,30 +37,36 @@ class Profiler
     private bool $running = false;
 
     /**
-     * Collected log data.
+     * Collected log data (parsed folded stacks).
      *
      * @var array<int, array<string, mixed>>
      */
     private array $log = [];
 
     /**
-     * Sample period in seconds.
+     * Raw folded stacks string produced by Excimer after stop().
      */
-    private float $period;
+    private string $foldedStacks = '';
 
     /**
-     * @param float $period Sample period in seconds (default: 0.01)
+     * Underlying Excimer profiler instance (null when extension unavailable).
      */
-    public function __construct(float $period = self::DEFAULT_PERIOD)
+    private ?ExcimerProfiler $excimerProfiler = null;
+
+    /**
+    * @param float $period Sample period in seconds (default: 0.01)
+    */
+    public function __construct(private float $period = self::DEFAULT_PERIOD)
     {
-        $this->period = $period;
     }
 
     /**
      * Start profiling.
      *
+     * When the excimer extension is loaded a real sampling profiler is started.
      * Note: calling start() will clear any previously collected log data.
-     * Call getLog() before calling start() again if you need to preserve the data.
+     * Call getLog() / getFoldedStacks() before calling start() again if you
+     * need to preserve the data.
      *
      * @throws RuntimeException if profiling is already running
      */
@@ -66,8 +76,16 @@ class Profiler
             throw new RuntimeException('Profiler is already running.');
         }
 
-        $this->log     = [];
-        $this->running = true;
+        $this->log          = [];
+        $this->foldedStacks = '';
+        $this->running      = true;
+
+        if (extension_loaded('excimer')) {
+            $this->excimerProfiler = new ExcimerProfiler();
+            $this->excimerProfiler->setPeriod($this->period);
+            $this->excimerProfiler->setEventType(EXCIMER_REAL);
+            $this->excimerProfiler->start();
+        }
     }
 
     /**
@@ -79,6 +97,21 @@ class Profiler
     {
         if (! $this->running) {
             throw new RuntimeException('Profiler is not running.');
+        }
+
+        if ($this->excimerProfiler instanceof ExcimerProfiler) {
+            $this->excimerProfiler->stop();
+            $excimerLog = $this->excimerProfiler->getLog();
+
+            try {
+                $this->foldedStacks = $excimerLog->formatFolded();
+            } catch (Error) {
+                // formatFolded() is absent in some older Excimer builds.
+                $this->foldedStacks = '';
+            }
+
+            $this->log             = $this->parseFoldedStacks($this->foldedStacks);
+            $this->excimerProfiler = null;
         }
 
         $this->running = false;
@@ -117,11 +150,26 @@ class Profiler
     /**
      * Get collected log data.
      *
+     * Each entry is an array with keys:
+     *   - 'stack' => array<int, string>  (call stack, outermost first)
+     *   - 'count' => int                 (number of samples for this stack)
+     *
      * @return array<int, array<string, mixed>>
      */
     public function getLog(): array
     {
         return $this->log;
+    }
+
+    /**
+     * Get the raw folded-stacks string produced by Excimer.
+     *
+     * Format: one line per unique stack, "frame1;frame2;...;frameN count".
+     * Returns an empty string when excimer is not available or before stop().
+     */
+    public function getFoldedStacks(): string
+    {
+        return $this->foldedStacks;
     }
 
     /**
@@ -135,6 +183,57 @@ class Profiler
             throw new RuntimeException('Cannot reset while profiler is running.');
         }
 
-        $this->log = [];
+        $this->log          = [];
+        $this->foldedStacks = '';
+    }
+
+    /**
+     * Parse a folded-stacks string into a structured array.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function parseFoldedStacks(string $folded): array
+    {
+        $result = [];
+        $folded = trim($folded);
+
+        if ($folded === '') {
+            return $result;
+        }
+
+        foreach (explode("\n", $folded) as $line) {
+            $line = trim($line);
+
+            if ($line === '') {
+                continue;
+            }
+
+            $lastSpace = strrpos($line, ' ');
+
+            if ($lastSpace === false) {
+                continue;
+            }
+
+            $stack     = substr($line, 0, $lastSpace);
+            $rawCount  = substr($line, $lastSpace + 1);
+
+            // Skip malformed lines where the count is not a positive integer.
+            if (! ctype_digit($rawCount)) {
+                continue;
+            }
+
+            $count = (int) $rawCount;
+
+            if ($count <= 0) {
+                continue;
+            }
+
+            $result[] = [
+                'stack' => explode(';', $stack),
+                'count' => $count,
+            ];
+        }
+
+        return $result;
     }
 }
