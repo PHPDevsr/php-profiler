@@ -104,7 +104,7 @@ class Profiler
 
             try {
                 $this->foldedStacks = $excimerLog->formatFolded();
-            } catch (\Error $e) {
+            } catch (\Error) {
                 // formatFolded() is absent in some older Excimer builds.
                 $this->foldedStacks = '';
             }
