@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PHPDevsr\Profiler;
 
+use Error;
 use ExcimerProfiler;
 use RuntimeException;
 
@@ -104,7 +105,7 @@ class Profiler
 
             try {
                 $this->foldedStacks = $excimerLog->formatFolded();
-            } catch (\Error) {
+            } catch (Error) {
                 // formatFolded() is absent in some older Excimer builds.
                 $this->foldedStacks = '';
             }
