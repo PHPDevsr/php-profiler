@@ -15,6 +15,8 @@ class ExcimerLog implements Countable, IteratorAggregate
      * Return the log in "folded stacks" format, suitable for flamegraph tools.
      *
      * Each line is "frame1;frame2;...;frameN count".
+     *
+     * @throws \Error if the method is absent in the installed Excimer build
      */
     public function formatFolded(): string
     {

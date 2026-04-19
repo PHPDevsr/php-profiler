@@ -100,8 +100,15 @@ class Profiler
 
         if ($this->excimerProfiler instanceof ExcimerProfiler) {
             $this->excimerProfiler->stop();
-            $excimerLog            = $this->excimerProfiler->getLog();
-            $this->foldedStacks    = $excimerLog->formatFolded();
+            $excimerLog = $this->excimerProfiler->getLog();
+
+            try {
+                $this->foldedStacks = $excimerLog->formatFolded();
+            } catch (\Error $e) {
+                // formatFolded() is absent in some older Excimer builds.
+                $this->foldedStacks = '';
+            }
+
             $this->log             = $this->parseFoldedStacks($this->foldedStacks);
             $this->excimerProfiler = null;
         }
